@@ -11,6 +11,7 @@ MongoClient.connect(
 
     io.on("connection", function (socket) {
       socket.on("room", async (room) => {
+        socket.join(room);
         const hasRoom = await chat.findOne({
           room,
         });
@@ -24,16 +25,16 @@ MongoClient.connect(
         }
         socket.on("add", async (e) => {
           const findRoom = await chat.findOne({
-            room,
+            room: e.room,
           });
           await chat.update(
-            { room },
+            { room: e.room },
             {
-              room,
+              room: e.room,
               detail: [e, ...findRoom.detail],
             }
           );
-          io.emit("addChat", e);
+          io.to(e.room).emit("addChat", e);
         });
       });
     });
